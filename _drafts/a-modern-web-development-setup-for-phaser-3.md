@@ -92,7 +92,7 @@ yarn add phaser@^3.0.0
 
 And that's it! We are done installing our dependencies. So let's move on to...
 
-### Configuring Webpack
+### Configuring Webpack Part 1: Babel and Webpack Dev Server
 
 Okay, here's a quick Webpack 101: your configuration goes in a `webpack.config.js` file, you tell Webpack where your source files are and where you want the single bundled output file to go, and you tell Webpack to run your files through `babel-loader`.
 
@@ -158,7 +158,7 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env']
+            presets: ['env']
           }
         }
       }
@@ -170,9 +170,139 @@ module.exports = {
 *deep breath* Webpack bundles code by traversing through your code base and resolving all it's **modules** (this term comes from the concept of importing and exporting code from different source files). So here, we are telling Webpack about special **rules** to follow when it's traversing our code. This special rule says that for all the source files whose name's match the regular expression `/\.js$/` and that are found in the `src/` directory, **use** the `babel-loader` for them. We're also giving `babel-loader` some instructions in the form of a preset. This preset is another development dependency that we'll need to install with Yarn.
 
 ```bash
-yarn add -D @babel/preset-env
+yarn add -D babel-preset-env
 ```
 
 Before we go any further and bring Phaser into the mix, let's test out our config and make sure it's working. We'll make a file for our entry point (`src/index.js`) as well as another file that we'll import to make sure our bundling is working correctly.
 
-Create the `src/index.js` file and open it up. For now, we'll just test the basics and alert a message.
+ For now, we'll keep it simple and make sure our Webpack config can handle a single file. Create the `src/index.js` file, open it up, and put the following code in it.
+
+ ```javascript
+var messageEl = document.createElement('div');
+messageEl.textContent = 'I was put here by JavaScript!';
+document.body.appendChild(messageEl);
+```
+
+Great, we have our JavaScript file, but how do we tell Webpack to actually run? Remember that `main` entry we deleted from our `package.json` file? It wasn't important for us because no one is installing our project as a dependency. However, it is important to Webpack (technically we care about the `bin` entry to Webpack's `package.json`, but it's the same idea). Yarn knows how to read Webpack's `package.json` file and run it for us.
+
+```bash
+yarn run webpack
+```
+
+![yarn webpack](/blog/img/posts/a-modern-web-development-setup-for-phaser-3/yarn-webpack.png)
+
+That's Webpack telling us that it's done! It has created the `build/` folder for us and stuck an `app.bundle.js` file in there.
+
+Awesome! How do we open that file up in our browser to see if it actually worked or not? Luckily for us, there is a tool that makes this really, *really* easy. It's called `webpack-dev-server` and it's another dependency we need to install.
+
+```bash
+yarn add -D webpack-dev-server@^2.0.0
+```
+
+Webpack Dev Server does a couple neat things. It automatically calls Webpack to bundle our code for us, and it runs a server that we can hit in our browser to run our bundled code. The extra neat part is that *it will automatically re-run Webpack every time we change our code*. So we won't need to manually run Webpack anymore, Webpack Dev Server will take care of it for us.
+
+We can run `webpack-dev-server` with Yarn in the same way we ran `webpack`.
+
+```bash
+yarn run webpack-dev-server
+```
+
+![yarn webpack dev server](/blog/img/posts/a-modern-web-development-setup-for-phaser-3/yarn-webpack-dev-server.png)
+
+This output is telling us that we now have a server running at `http://localhost:8080`. If we open up our web browser and navigate to that page, our JavaScript file won't be running quite yet. We'll need an HTML file for it to serve where we are including our JavaScript file.
+
+Let's make that HTML file at the root of our directory, and set it up to include our bundled JavaScript.
+
+```html
+<html>
+  <head>
+  </head>
+  <body>
+    <script src="app.bundle.js"></script>
+  </body>
+</html>
+```
+
+Then, we'll tell webpack to copy this file into our `build/` directory every time it bundles our code. To do this, we'll use a [plugin](https://webpack.js.org/plugins/) for Webpack, specifically the [`CopyWebpackPlugin`](https://webpack.js.org/plugins/copy-webpack-plugin/). Guess how we'll install this dependency?
+
+```bash
+yarn add -D copy-webpack-plugin
+```
+
+Then we'll tell Webpack to use it. Don't forget to require the plugin at the top of the file.
+
+```javascript
+const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+
+module.exports = {
+  entry: {
+    app: './src/index.js'
+  },
+
+  output: {
+    path: path.resolve(__dirname, 'build'),
+    filename: 'app.bundle.js'
+  },
+
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        include: path.resolve(__dirname, 'src/'),
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['env']
+          }
+        }
+      }
+    ]
+  },
+
+  plugins: [
+    new CopyWebpackPlugin([
+      {
+        from: path.resolve(__dirname, 'index.html'),
+        to: path.resolve(__dirname, 'build')
+      }
+    ])
+  ]
+}
+```
+
+If we run Webpack again, it will tell us it made the `app.bundle.js` file, as well as the `index.html` file. We'll also see our `index.html` file appear in the `build/` directory.
+
+![yarn webpack with index html](/blog/img/posts/a-modern-web-development-setup-for-phaser-3/yarn-webpack-with-index-html.png)
+
+Okay, let's try running Webpack Dev Server again and see what happens.
+
+![browser with text](/blog/img/posts/a-modern-web-development-setup-for-phaser-3/browser-with-text.png)
+
+Yes! We've got our dev server up and running and it's serving our code. The best part is, as we make changes to our code it will automatically refresh the browser to run our latest changes. To prove it, change the text being added to the DOM in our JavaScript. Then look at your browser and see that it's updated automatically.
+
+Time to make sure our code bundling is working. Let's add a second JavaScript file to the mix. Just as a quick experiment, rather than our `index.js` file doing the work to put our message into the DOM, let's make a file that is responsible for doing just that.
+
+Create a `src/messager.js` file that exports a `showMessage` function that we'll call from our `src/index.js` file.
+
+`src/messager.js`:
+```javascript
+export function showMessage(messageText) {
+  var messageEl = document.createElement('div');
+  messageEl.textContent = messageText;
+  document.body.appendChild(messageEl);
+}
+```
+
+`src/index.js`:
+```javascript
+import { showMessage } from './messager';
+
+showMessage('Somebody else did this work!');
+```
+
+Now look at the browser again, it should say our new message.
+
+### Configuring Webpack Part 2: Phaser
+
+Okay, we've verified our Webpack set up is working correctly, now it's time to actually use our Phaser dependency.

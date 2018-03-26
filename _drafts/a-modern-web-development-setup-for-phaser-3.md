@@ -306,3 +306,184 @@ Now look at the browser again, it should say our new message.
 ### Configuring Webpack Part 2: Phaser
 
 Okay, we've verified our Webpack set up is working correctly, now it's time to actually use our Phaser dependency.
+
+Phaser needs a couple extra tweaks to Webpack to get it working. Because it supports `.vert` and `.frag` files, we need to use a special loader for them, the `raw-loader`. It also needs two global variables defined to tell it which renderers are available: `WEBGL_RENDERER` and `CANVAS_RENDERER`. For now, we can make set them both to `true` using a built-in Webpack plugin called the `DefinePlugin`.
+
+So we have three things to do. 1) Install the `raw-loader` dependency, 2) tell Webpack about our new **rule** of using the `raw-loader` for any files matching `.vert` or `.frag`, and 3) define the two global variables for Phaser.
+
+```bash
+yarn add -D raw-loader
+```
+
+```javascript
+const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const webpack = require('webpack');
+
+module.exports = {
+  entry: {
+    app: './src/index.js'
+  },
+
+  output: {
+    path: path.resolve(__dirname, 'build'),
+    filename: 'app.bundle.js'
+  },
+
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        include: path.resolve(__dirname, 'src/'),
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['env']
+          }
+        }
+      },
+      {
+        test: [ /\.vert$/, /\.frag$/ ],
+        use: {
+          loader: 'raw-loader'
+        }
+      }
+    ]
+  },
+
+  plugins: [
+    new webpack.DefinePlugin({
+      'CANVAS_RENDERER': JSON.stringify(true),
+      'WEBGL_RENDERER': JSON.stringify(true)
+    }),
+    new CopyWebpackPlugin([
+      {
+        from: path.resolve(__dirname, 'index.html'),
+        to: path.resolve(__dirname, 'build')
+      }
+    ])
+  ]
+}
+```
+
+Any time you make a change to your Webpack config file, you'll need to restart webpack dev server. Kill the currently running one and run it again.
+
+Now let's create a dead simple Phaser "game". I put quotes around game because all we're going to do is show some text on the screen.
+
+We can go ahead and delete the `src/messager.js` file from before, we won't be using that anymore. We'll also start ourselves off with some good organization by creating a `src/scenes/simple-scene.js` file where we will define our scene, and then use it in our `src/index.js` file.
+
+`src/index.js`
+```javascript
+import 'phaser';
+
+import { SimpleScene } from './scenes/simple-scene';
+
+const gameConfig = {
+  width: 680,
+  height: 400,
+  scene: SimpleScene
+};
+
+new Phaser.Game(gameConfig);
+```
+
+`src/scenes/simple-scene.js`
+```javascript
+export class SimpleScene extends Phaser.Scene {
+  create() {
+    this.add.text(100, 100, 'Hello Phaser!', { fill: '#0f0' });
+  }
+}
+```
+
+Take a look at the browser again, and you should see our instance of Phaser up and running!
+
+![browser with phaser](/blog/img/posts/a-modern-web-development-setup-for-phaser-3/browser-with-phaser.png)
+
+### Configuring Webpack Part 3: Bundling Phaser Separately
+
+You almost thought we were done, didn't you? We have our "game" up and running, but there's still one thing left to do.
+
+The problem is that Webpack is bundling our game's code with Phaser's code every single time we change something in our game. That means it's not just looking at our 2 files and combining them, but also the hundreds of files in Phaser and combining them as well. That's a ton of extra work we're making Webpack do, and you can actually notice the build taking more time than when we weren't including Phaser.
+
+But the Webpack people were smart. They knew that this would be a problem and have a great solution for it. Instead of only creating one bundle with all the code in it, we are going to make two bundles. One with our game's code, and one with all the code for our production dependecies (i.e. just Phaser). This way, we'll have one bundle that will change frequently (our game's bundle) and one that will almost never change (the production dependencies bundle). Webpack will be smart about this too, and only rebuild the bundles that need to be rebuilt when a change is made.
+
+To do this, we'll use a plugin built in to Webpack called the `CommonsChunkPlugin`. Scary name, but it means that it's going to take all the common code (Phaser) out of our main bundle, and put it in a separate bundle. We'll do this by making a new entry point and telling Webpack that it's our common code.
+
+```javascript
+const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const webpack = require('webpack');
+
+module.exports = {
+  entry: {
+    app: './src/index.js',
+    'production-dependencies': ['phaser']
+  },
+
+  output: {
+    path: path.resolve(__dirname, 'build'),
+    filename: 'app.bundle.js'
+  },
+
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        include: path.resolve(__dirname, 'src/'),
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['env']
+          }
+        }
+      },
+      {
+        test: [ /\.vert$/, /\.frag$/ ],
+        use: {
+          loader: 'raw-loader'
+        }
+      }
+    ]
+  },
+
+  plugins: [
+    new webpack.DefinePlugin({
+      'CANVAS_RENDERER': JSON.stringify(true),
+      'WEBGL_RENDERER': JSON.stringify(true)
+    }),
+    new CopyWebpackPlugin([
+      {
+        from: path.resolve(__dirname, 'index.html'),
+        to: path.resolve(__dirname, 'build')
+      }
+    ]),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'production-dependencies',
+      filename: 'production-dependencies.bundle.js'
+    }),
+  ]
+}
+```
+
+Last step is to include this new `production-dependencies.bundle.js` file in our `index.html` file.
+
+```html
+<html>
+  <head>
+  </head>
+  <body>
+    <script src="production-dependencies.bundle.js"></script>
+    <script src="app.bundle.js"></script>
+  </body>
+</html>
+```
+
+## The End
+
+Phew, we made it. And now you've got a decent setup for developing a modern Phaser 3 game:
+- We're using ES6
+- We've got a module system set up to separate the concerns in our code base
+- We've got a quick development workflow that automatically updates our running code
+
+If you want to see what the full setup looks like, you can [view it on GitHub](https://github.com/snowbillr/phaser3-webpack-es6-dev-starter).

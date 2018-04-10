@@ -175,6 +175,10 @@ module.exports = {
 yarn add -D babel-preset-env
 ```
 
+The `babel-preset-env` preset is how we tell Babel what ES6/ES7/ES8 features we want to be transpiled. The way we are using it, with no additional options, means that we are getting all the features of the latest version of the JavaScript specification and none of the features that are still in proposal stages. You can learn more about how the preset works [here](https://babeljs.io/docs/plugins/preset-env/), specifically the [section on supporting the latest features](https://babeljs.io/docs/plugins/preset-env/#support-all-plugins-in-babel-that-are-considered-latest).
+
+If you want to get advanced with your usage of Babel and pick and choose what JavaScript features you want supported, you'll probably need to use some combination of the [include](https://babeljs.io/docs/plugins/preset-env/#include) and [exclude](https://babeljs.io/docs/plugins/preset-env/#exclude) options for the preset.
+
 Before we go any further and bring Phaser into the mix, let's test out our config and make sure it's working. We'll make a file for our entry point (`src/index.js`) as well as another file that we'll import to make sure our bundling is working correctly.
 
 For now, we'll keep it simple and make sure our Webpack config can handle a single file. Open up the empty `src/index.js` file from before, and put the following code in it.

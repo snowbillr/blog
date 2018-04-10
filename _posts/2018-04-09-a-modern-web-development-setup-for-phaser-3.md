@@ -491,5 +491,6 @@ Phew, we made it. And now you've got a decent setup for developing a modern Phas
 - We're using ES6
 - We've got a module system set up to separate the concerns in our code base
 - We've got a quick development workflow that automatically updates our running code
+- We're bundling out dependencies separately from our own code
 
 If you want to see what the full setup looks like, you can [view it on GitHub](https://github.com/snowbillr/phaser3-webpack-es6-dev-starter).

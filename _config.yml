@@ -93,7 +93,7 @@ url-pretty: "View Source | Bill Reed's Blog"  # eg. "https://snowbillr.github.io
 # --- Web Statistics Section --- #
 
 # Fill in your Google Analytics ID to track your website using GA
-#google_analytics: ""
+google_analytics: "UA-117260926-1"
 
 # Google Tag Manager ID
 #gtm: ""

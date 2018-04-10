@@ -109,7 +109,7 @@ google_analytics: "UA-117260926-1"
 
 # --- Misc --- #
 # Fill in your Disqus shortname (NOT the userid) if you want to support Disqus comments
-#disqus: ""
+disqus: "snowbillr"
 
 # Facebook App ID
 # fb_app_id: ""

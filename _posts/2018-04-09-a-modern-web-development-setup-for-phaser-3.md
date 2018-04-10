@@ -499,6 +499,6 @@ If you want to see what the full setup looks like, you can [view it on GitHub](h
 
 This set up is geared towards the _development_ of a Phaser 3 game. When it comes to making your production build, you'll need to add some more configuration to your `webpack.config.js`. You'll add in the [UglifyJs plugin](https://github.com/webpack-contrib/uglifyjs-webpack-plugin) to minify your code, and probably end up using a different HTML file to present your game.
 
-And don't worry, the work you've done by following this guide hasn't been in vain. You'll be able to take your project set up in its current form and add in the extra configuration we just talked about by adding a new plugin to your Webpack configuration and modifying your index html file.
+And don't worry, the work you've done by following this guide hasn't been in vain. You'll be able to take your project set up in its current form and add in the extra configuration we just talked about by adding to your existing Webpack configuration.
 
 Happy coding!

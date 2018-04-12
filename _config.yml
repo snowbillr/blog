@@ -8,7 +8,7 @@ url: "http://snowbillr.github.io/blog/"
 baseurl: "/blog"
 
 # Name of website
-title: View Source | Bill Reed's Blog
+title: Snowbillr's Blog
 
 # Short description of your site
 description: The personal blog of Bill Reed.
@@ -88,7 +88,7 @@ share-links-active:
 
 # How to display the link to the website in the footer
 # Remove this if you don't want a link in the footer
-url-pretty: "View Source | Bill Reed's Blog"  # eg. "https://snowbillr.github.io/blog"
+url-pretty: "Snowbillr's Blog"  # eg. "https://snowbillr.github.io/blog"
 
 # --- Web Statistics Section --- #
 

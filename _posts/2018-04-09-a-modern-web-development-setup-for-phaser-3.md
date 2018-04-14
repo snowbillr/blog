@@ -281,6 +281,68 @@ If we run Webpack again, it will tell us it created the `app.bundle.js` file, as
 
 ![yarn webpack with index html](/blog/img/posts/a-modern-web-development-setup-for-phaser-3/yarn-webpack-with-index-html.png)
 
+The last thing we need to do is tell Webpack Dev Server to use the `build/` directory to serve our content so that it loads the code that has been run through Webpack. Add the `devServer`more option to our webpack config.
+
+```javascript
+const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const webpack = require('webpack');
+
+module.exports = {
+  entry: {
+    app: './src/index.js',
+    'production-dependencies': ['phaser']
+  },
+
+  output: {
+    path: path.resolve(__dirname, 'build'),
+    filename: 'app.bundle.js'
+  },
+
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        include: path.resolve(__dirname, 'src/'),
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['env']
+          }
+        }
+      },
+      {
+        test: [ /\.vert$/, /\.frag$/ ],
+        use: {
+          loader: 'raw-loader'
+        }
+      }
+    ]
+  },
+
+  devServer: {
+    contentBase: path.resolve(__dirname, 'dist'),
+  },
+
+  plugins: [
+    new webpack.DefinePlugin({
+      'CANVAS_RENDERER': JSON.stringify(true),
+      'WEBGL_RENDERER': JSON.stringify(true)
+    }),
+    new CopyWebpackPlugin([
+      {
+        from: path.resolve(__dirname, 'index.html'),
+        to: path.resolve(__dirname, 'build')
+      }
+    ]),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'production-dependencies',
+      filename: 'production-dependencies.bundle.js'
+    }),
+  ]
+}
+```
+
 Okay, let's try running Webpack Dev Server again and see what happens.
 
 ![browser with text](/blog/img/posts/a-modern-web-development-setup-for-phaser-3/browser-with-text.png)
@@ -406,7 +468,110 @@ Take a look at the browser again, and you should see our instance of Phaser up a
 
 ![browser with phaser](/blog/img/posts/a-modern-web-development-setup-for-phaser-3/browser-with-phaser.png)
 
-### Configuring Webpack Part 3: Bundling Phaser Separately
+### Configuring Webpack Part 3: Assets
+
+What's a game without assets? We need to make sure that our setup can load images, tilemaps, sounds, and whatever else our game needs.
+
+To get started, we'll make sure we can load a simple image into our game. Go ahead and download [this image](https://github.com/snowbillr/phaser3-webpack-es6-dev-starter/raw/master/assets/cokecan.png) which I found in the [Phaser 3 examples repository](https://github.com/photonstorm/phaser3-examples/tree/master/public/assets).
+
+Side note: the [Phaser 3 examples repo](https://github.com/photonstorm/phaser3-examples/) is one of the best learning resources out there for Phaser. If you have questions about how to do something, chances are there is an example for it. And if there isn't and you figure out how to do it anyway, make a pull request on the repo! Secondly, the amount of free assets that are provided in that repository is astounding. Thanks Rich.
+
+I liked the Coke can sprite, so I chose that one. Feel free to pick whichever one you want though.
+
+Make an `assets` directory at the top level of your project and put the image file you downloaded in there. This is the directory where we'll keep our images, spritesheets, sounds, tilemaps, and whatever other assets we use in our game.
+
+Let's try to add the image into our scene.
+
+```javascript
+export class SimpleScene extends Phaser.Scene {
+  preload() {
+    this.load.image('cokecan', 'assets/cokecan.png');
+  }
+
+  create() {
+    this.add.text(100, 100, 'Hello Phaser!', { fill: '#0f0' });
+    this.add.image(100, 200, 'cokecan');
+  }
+}
+```
+
+Running that in the browser gives us a scene that looks like this:
+
+![browser with broken image](/blog/img/posts/a-modern-web-development-setup-for-phaser-3/browser-with-broken-image.png)
+
+Whoops, our image file can't be found by Phaser.
+
+This is because Webpack Dev Server is serving our code from the `build/` directory, but our assets are not in there. As part of our build process, we need to copy our assets from the `assets/` folder into a folder inside the `build/` directory. This should be very similar to how we copied the `index.html` file into the `build/` directory.
+
+```javascript
+const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const webpack = require('webpack');
+
+module.exports = {
+  entry: {
+    app: './src/index.js',
+    'production-dependencies': ['phaser']
+  },
+
+  output: {
+    path: path.resolve(__dirname, 'build'),
+    filename: 'app.bundle.js'
+  },
+
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        include: path.resolve(__dirname, 'src/'),
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['env']
+          }
+        }
+      },
+      {
+        test: [ /\.vert$/, /\.frag$/ ],
+        use: {
+          loader: 'raw-loader'
+        }
+      }
+    ]
+  },
+
+  devServer: {
+    contentBase: path.resolve(__dirname, 'dist'),
+  },
+
+  plugins: [
+    new webpack.DefinePlugin({
+      'CANVAS_RENDERER': JSON.stringify(true),
+      'WEBGL_RENDERER': JSON.stringify(true)
+    }),
+    new CopyWebpackPlugin([
+      {
+        from: path.resolve(__dirname, 'index.html'),
+        to: path.resolve(__dirname, 'build')
+      },
+      {
+        from: path.resolve(__dirname, 'assets', '**', '*'),
+        to: path.resolve(__dirname, 'build')
+      }
+    ]),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'production-dependencies',
+      filename: 'production-dependencies.bundle.js'
+    }),
+  ]
+}
+```
+
+And voila!
+
+![browser with image](/blog/img/posts/a-modern-web-development-setup-for-phaser-3/browser-with-image.png)
+
+### Configuring Webpack Part 4: Bundling Phaser Separately
 
 You thought we were done, didn't you? We have our "game" up and running, but there's still one thing left to do.
 
@@ -490,6 +655,7 @@ Last step is to include this new `production-dependencies.bundle.js` file in our
 Phew, we made it. And now you've got a decent setup for developing a modern Phaser 3 game:
 - We're using ES6
 - We've got a module system set up to separate the concerns in our code base
+- We've got a way to load assets
 - We've got a quick development workflow that automatically updates our running code
 - We're bundling out dependencies separately from our own code
 

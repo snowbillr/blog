@@ -320,10 +320,6 @@ module.exports = {
     ]
   },
 
-  devServer: {
-    contentBase: path.resolve(__dirname, 'dist'),
-  },
-
   plugins: [
     new webpack.DefinePlugin({
       'CANVAS_RENDERER': JSON.stringify(true),
@@ -339,7 +335,11 @@ module.exports = {
       name: 'production-dependencies',
       filename: 'production-dependencies.bundle.js'
     }),
-  ]
+  ],
+
+  devServer: {
+    contentBase: path.resolve(__dirname, 'dist'),
+  }
 }
 ```
 
@@ -430,7 +430,11 @@ module.exports = {
         to: path.resolve(__dirname, 'build')
       }
     ])
-  ]
+  ],
+
+  devServer: {
+    contentBase: path.resolve(__dirname, 'dist'),
+  }
 }
 ```
 
@@ -540,10 +544,6 @@ module.exports = {
     ]
   },
 
-  devServer: {
-    contentBase: path.resolve(__dirname, 'dist'),
-  },
-
   plugins: [
     new webpack.DefinePlugin({
       'CANVAS_RENDERER': JSON.stringify(true),
@@ -558,12 +558,12 @@ module.exports = {
         from: path.resolve(__dirname, 'assets', '**', '*'),
         to: path.resolve(__dirname, 'build')
       }
-    ]),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'production-dependencies',
-      filename: 'production-dependencies.bundle.js'
-    }),
-  ]
+    ])
+  ],
+
+  devServer: {
+    contentBase: path.resolve(__dirname, 'dist'),
+  }
 }
 ```
 
@@ -627,13 +627,21 @@ module.exports = {
       {
         from: path.resolve(__dirname, 'index.html'),
         to: path.resolve(__dirname, 'build')
+      },
+      {
+        from: path.resolve(__dirname, 'assets', '**', '*'),
+        to: path.resolve(__dirname, 'build')
       }
     ]),
     new webpack.optimize.CommonsChunkPlugin({
       name: 'production-dependencies',
       filename: 'production-dependencies.bundle.js'
     }),
-  ]
+  ],
+
+  devServer: {
+    contentBase: path.resolve(__dirname, 'dist'),
+  }
 }
 ```
 

@@ -355,15 +355,11 @@ Now look at the browser again, it should say our new message.
 
 Okay, we've verified our Webpack setup is working correctly, now it's time to actually use our Phaser dependency.
 
-Phaser needs a couple extra tweaks to Webpack to get it working. Because it supports `.vert` and `.frag` files, we need to use a special loader for them named the `raw-loader`. It also needs two global variables defined to tell it which renderers are available: `WEBGL_RENDERER` and `CANVAS_RENDERER`. For now, we'll use the built-in `DefinePlugin` to set them both to `true`.
+Phaser needs an extra tweak to our Webpack config to get it working. We need to define two global variables to tell Phaser which renderers are available when building: `WEBGL_RENDERER` and `CANVAS_RENDERER`. For now, we'll use the built-in `DefinePlugin` to set them both to `true`.
 
 For more advanced use cases, these two global variables determine which renderer is included in the Phaser build. If you only want to run your game with WebGL, then you'd set `WEBGL_RENDERER` to `true`, and `CANVAS_RENDERER` to `false`. This way, your final code bundle would be smaller because all the canvas rendering code would be left out.
 
-So we have three things to do. 1) Install the `raw-loader` dependency, 2) tell Webpack about our new **rule** of using the `raw-loader` for any files matching `.vert` or `.frag`, and 3) define the two global variables for Phaser.
-
-```bash
-yarn add -D raw-loader
-```
+So we have one thing to do: define the two renderer global variables for Phaser's build.
 
 ```javascript
 const path = require('path');
@@ -391,12 +387,6 @@ module.exports = {
             presets: ['env']
           }
         }
-      },
-      {
-        test: [ /\.vert$/, /\.frag$/ ],
-        use: {
-          loader: 'raw-loader'
-        }
       }
     ]
   },
@@ -413,12 +403,14 @@ module.exports = {
       }
     ]),
     new webpack.DefinePlugin({
-      'CANVAS_RENDERER': JSON.stringify(true),
-      'WEBGL_RENDERER': JSON.stringify(true)
+      'typeof CANVAS_RENDERER': JSON.stringify(true),
+      'typeof WEBGL_RENDERER': JSON.stringify(true)
     })
   ]
 }
 ```
+
+*Bonus advanced details:* the reason we are defining the global variables as "typeof X_RENDERER" instead of `X_RENDERER` is because Phaser supports other code bundlers than just Webpack. The `DefinePlugin` works more as a "find and replace plugin", and will replace every instance of the text `typeof CANVAS_RENDERER` in the code with `true`. If instead, we omitted the `typeof` and just used `CANVAS_RENDERER`, other build systems would not replace it with `true`, the variable would evaluate to `false`, and the build would exclude both renderers.
 
 Any time you make a change to your Webpack config file you'll need to restart Webpack Dev Server. Kill the currently running one and run it again with Yarn.
 
@@ -516,12 +508,6 @@ module.exports = {
             presets: ['env']
           }
         }
-      },
-      {
-        test: [ /\.vert$/, /\.frag$/ ],
-        use: {
-          loader: 'raw-loader'
-        }
       }
     ]
   },
@@ -542,8 +528,8 @@ module.exports = {
       }
     ]),
     new webpack.DefinePlugin({
-      'CANVAS_RENDERER': JSON.stringify(true),
-      'WEBGL_RENDERER': JSON.stringify(true)
+      'typeof CANVAS_RENDERER': JSON.stringify(true),
+      'typeof WEBGL_RENDERER': JSON.stringify(true)
     })
   ]
 }
@@ -590,12 +576,6 @@ module.exports = {
             presets: ['env']
           }
         }
-      },
-      {
-        test: [ /\.vert$/, /\.frag$/ ],
-        use: {
-          loader: 'raw-loader'
-        }
       }
     ]
   },
@@ -612,8 +592,8 @@ module.exports = {
       }
     ]),
     new webpack.DefinePlugin({
-      'CANVAS_RENDERER': JSON.stringify(true),
-      'WEBGL_RENDERER': JSON.stringify(true)
+      'typeof CANVAS_RENDERER': JSON.stringify(true),
+      'typeof WEBGL_RENDERER': JSON.stringify(true)
     }),
     new webpack.optimize.CommonsChunkPlugin({
       name: 'production-dependencies',
@@ -658,3 +638,7 @@ This set up is geared towards the *development* of a Phaser 3 game. When it come
 And don't worry, the work you've done by following this guide hasn't been in vain. You'll be able to take your project setup in its current form and add in the extra configuration we just talked about by adding to your existing Webpack config file.
 
 Happy coding!
+
+## Update
+
+*5/9/2018:* The release of Phaser 3.7 changed up the requirements for the Webpack config a little bit. The article was updated to to reflect the new configuration.

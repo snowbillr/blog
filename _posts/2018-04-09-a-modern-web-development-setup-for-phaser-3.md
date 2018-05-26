@@ -1,5 +1,7 @@
 # A Modern Web Development Setup for Phaser 3
 
+*Special thanks to my new friend [Jesse](https://www.github.com/lawsonry) for helping update this post!*
+
 Lots of tutorials for Phaser assume all your game's code will be in one JavaScript file and that all your dependencies will be downloaded by hand. In a real world development environment this would not be a feasible setup.
 
 In a modern development environment, you'll be using something like Yarn to manage your dependencies and Webpack to bundle your code. In some cases you might be using a tool to transpile your code.
@@ -412,7 +414,48 @@ module.exports = {
 
 *Bonus advanced details:* the reason we are defining the global variables as "typeof X_RENDERER" instead of `X_RENDERER` is because Phaser supports other code bundlers than just Webpack. The `DefinePlugin` works more as a "find and replace plugin", and will replace every instance of the text `typeof CANVAS_RENDERER` in the code with `true`. If instead, we omitted the `typeof` and just used `CANVAS_RENDERER`, other build systems would not replace it with `true`, the variable would evaluate to `false`, and the build would exclude both renderers.
 
-Any time you make a change to your Webpack config file you'll need to restart Webpack Dev Server. Kill the currently running one and run it again with Yarn.
+Any time you make a change to your Webpack config file you'll need to restart Webpack Dev Server, but if you try to do it right now, you'll get a bunch of errors that say something like this:
+
+```
+Unexpected character '#'...
+```
+
+This is due to some ways that the `#` character is processed when using Phaser 3. In fact, if you look at the [project template for Phaser 3](https://github.com/photonstorm/phaser3-project-template) (which uses `npm` instead of `yarn`, so YMMV if you decide to abandon this blog post), you'll notice that the `raw-loader` package is used to account for files which are throwing the error about the `#` character. 
+
+Let's install the `raw-loader` package and configure it in `webpack.config.js`. 
+
+First, let's use the same version in the Phaser 3 project template I mentioned above:
+
+```bash
+yarn add -D raw-loader
+```
+
+Next, let's update our webpack config:
+
+```javascript
+...
+rules: [
+            {   /* Run all js through babel */
+                test: /\.js$/,
+                include: path.resolve(__dirname, 'src/'),
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['env']
+                    }
+                }
+            },
+            {
+                test: [ /\.vert$/, /\.frag$/ ],
+                use: 'raw-loader'
+              }
+        ]
+...
+```
+
+As you can see, we're just accounting for the .vert and .frag files that will throw the `#` errors if we don't use raw loader here. 
+
+Go ahead and kill the currently running dev server, and restart it. (You need to do this because, as I mentioned previously, anytime you change the `webpack.config.js` file you'll need to restart the server for the changes to take effect).
 
 Now let's create a dead simple Phaser "game". I put quotes around game because all we're going to do is show some text on the screen.
 

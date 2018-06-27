@@ -1,10 +1,8 @@
-# Buttons in Phaser 3
-
-Phaser 2 had buttons but they aren't built-in to Phaser 3. Thankfully, they are simple to make on our own. In this tutorial we'll go over the basics of what a button is in Phaser-land and a couple of different ways to make them.
+Phaser 2 had buttons but they aren't built in to Phaser 3. Thankfully, they are simple to make on our own. In this tutorial we'll break down what it means to be a button and how to make one in Phaser-land.
 
 ## Buttons Aren't Scary
 
-Buttons aren't some magic black box of mystery. At its core concept a button is something that responds to clicks.
+Buttons aren't some magic black box of mystery. In its simplest form a button is something that responds to clicks.
 
 That's it.
 
@@ -24,7 +22,7 @@ Lucky for us our project already has taken care of the first part of our most ba
 
 The ugly green text is an instance of `Phaser.GameObjects.Text` which extends the `Phaser.GameObjects.GameObject` class. Everything that gets added to our scene is an instance of `GameObject`, and this is the class that provides us with the method we need to make our text (or our image, or sprite, or any other `GameObject`) clickable.
 
-We need tell Phaser that we want our player to be able to interact with our `GameObject`. [I wonder what method we should call on GameObject.](https://github.com/photonstorm/phaser/blob/v3.3.0/src/gameobjects/GameObject.js#L262).
+We need tell Phaser that we want our player to be able to interact with our `GameObject`. [I wonder what method we should call on GameObject.](https://github.com/photonstorm/phaser/blob/v3.3.0/src/gameobjects/GameObject.js#L262)
 
 Great guess! It *is* the `setInteractive` method. Don't worry about any of the arguments to the method for now. If we call that method on our text with no parameters, it will make the rectangular bounds of our text interactive, which is exactly what we want. So let's do that in `scenes/simple-scene.js`. We'll also keep a reference to our text object in a variable so we have access to it later. Since we don't need the coke can sprite, we can remove that as well.
 
@@ -86,13 +84,13 @@ export class SimpleScene extends Phaser.Scene {
 }
 ```
 
+![browser most basic button](/blog/img/posts/buttons-in-phaser-3/browser-most-basic-button.gif)
+
 So there's the Most Basic Button™ that we can possibly make.
 
 ## The Slightly More Complicated Button
 
-The Slightly More Complicated Button™ does more than just respond to clicks. Just like a button on a website, this button has a [`hover` state](https://developer.mozilla.org/en-US/docs/Web/CSS/:hover) and an [`active` state](https://developer.mozilla.org/en-US/docs/Web/CSS/:active). These two states give the user an indication of their interaction with the button.
-
-Didn't it feel weird when you moused over The Most Basic Button™ and nothing happened? This is because you were expecting the button to have some kind of hover state. We can detect when a user is hovering over a button with the `pointerover` event, and detect when the user leaves the hover state with the `pointerout` event. Let's have our button change its text color when the user hovers over it. We can add listeners for those two events to change our button's color.
+Didn't it feel weird when you moused over The Most Basic Button™ and nothing changed visually? This is because you were expecting the button to have some kind of hover state. We can detect when a user is hovering over a button with the `pointerover` event, and detect when the user leaves the hover state with the `pointerout` event. Let's have our button change its text color when the user hovers over it. We can add listeners for those two events to change our button's color.
 
 ```javascript
 export class SimpleScene extends Phaser.Scene {
@@ -104,7 +102,7 @@ export class SimpleScene extends Phaser.Scene {
      .setInteractive()
      .on('pointerdown', () => this.updateClickCountText(++clickCount) )
      .on('pointerover', () => this.enterButtonHoverState() )
-     .on('pointerout', () => this.exitButtonHoverState() );
+     .on('pointerout', () => this.enterButtonRestState() );
 
     this.updateClickCountText(clickCount);
   }
@@ -117,7 +115,7 @@ export class SimpleScene extends Phaser.Scene {
     this.clickButton.setStyle({ fill: '#ff0 '});
   }
 
-  exitButtonHoverState() {
+  enterButtonRestState() {
     this.clickButton.setStyle({ fill: '#0f0' });
   }
 }
@@ -136,7 +134,7 @@ export class SimpleScene extends Phaser.Scene {
     this.clickButton = this.add.text(100, 100, 'Click me!', { fill: '#0f0' })
       .setInteractive()
       .on('pointerover', () => this.enterButtonHoverState() )
-      .on('pointerout', () => this.exitButtonHoverState() )
+      .on('pointerout', () => this.enterButtonRestState() )
       .on('pointerdown', () => this.enterButtonActiveState() )
       .on('pointerup', () => {
         this.updateClickCountText(++clickCount);
@@ -154,7 +152,7 @@ export class SimpleScene extends Phaser.Scene {
     this.clickButton.setStyle({ fill: '#ff0 '});
   }
 
-  exitButtonHoverState() {
+  enterButtonRestState() {
     this.clickButton.setStyle({ fill: '#0f0' });
   }
 
@@ -165,3 +163,440 @@ export class SimpleScene extends Phaser.Scene {
 ```
 
 ![browser simple hover and active](/blog/img/posts/buttons-in-phaser-3/browser-simple-hover-and-active.gif)
+
+## The Just A Little More Intuitive Yet Slightly More Complicated Button
+
+As of version 3.10.0, Phaser makes it very easy for us to change the mouse cursor to a hand during the hover state of our button. Instead of calling `setInteractive` on our `GameObject` with no parameters, we'll pass in an object with the `useHandCursor` property set to true.
+
+```javascript
+export class SimpleScene extends Phaser.Scene {
+  create() {
+    let clickCount = 0;
+    this.clickCountText = this.add.text(100, 200, '');
+
+    this.clickButton = this.add.text(100, 100, 'Click me!', { fill: '#0f0' })
+      .setInteractive({ useHandCursor: true })
+      .on('pointerover', () => this.enterButtonHoverState() )
+      .on('pointerout', () => this.enterButtonRestState() )
+      .on('pointerdown', () => this.enterButtonActiveState() )
+      .on('pointerup', () => {
+        this.updateClickCountText(++clickCount);
+        this.enterButtonHoverState();
+    });
+
+    this.updateClickCountText(clickCount);
+  }
+
+  updateClickCountText(clickCount) {
+    this.clickCountText.setText(`Button has been clicked ${clickCount} times.`);
+  }
+
+  enterButtonHoverState() {
+    this.clickButton.setStyle({ fill: '#ff0 '});
+  }
+
+  enterButtonRestState() {
+    this.clickButton.setStyle({ fill: '#0f0' });
+  }
+
+  enterButtonActiveState() {
+    this.clickButton.setStyle({ fill: '#0ff' });
+  }
+}
+```
+
+![browser hand cursor](/blog/img/posts/buttons-in-phaser-3/browser-hand-cursor.gif)
+
+## Keeping It Clean
+
+In the spirit of keeping our codebase well organized, we have some refactoring to do. If we want to add more than one of our ugly buttons to our game, we would need to dupliate this code each time. Instead of that, let's extract the code for the button into its own class.
+
+> Bonus Tip: Phaser has an excellent plugin system that allows you to add your own `GameObject` factories. However, I haven't taken the time to dive into it yet, plus its a little outside the scope of this tutorial. As an exercise on your own, try and build this out into a real plugin!
+
+### A Custom `GameObject`
+
+Let's keep it simple and stick with a text-only button. Make a new folder in your project to keep our custom game object in:
+
+```bash
+mkdir src/game-objects
+```
+
+Then create a file for our text button:
+
+```bash
+touch src/game-objects/text-button.js
+```
+
+And then in the file, lets start off with exporting an empty class that extends the Phaser text object.
+
+```javascript
+export class TextButton extends Phaser.GameObjects.Text {
+
+}
+```
+
+Congratulations! We've created our first custom GameObject. Granted, it doesn't have any custom functionality - it's just a renamed text object at this point. But we may as well start using it in our refactoring process.
+
+We'll need to slightly adjust how we're creating our text button as well. Since there is no factory method for our custom game object, we'll have to instantiate it manually and then add it to the scene. Let's start by doing that with the regular Phaser text object.
+
+```javascripts
+export class SimpleScene extends Phaser.Scene {
+  create() {
+    let clickCount = 0;
+    this.clickCountText = this.add.text(100, 200, '');
+
+    this.clickButton = new Phaser.GameObjects.Text(this, 100, 100, 'Click me!', { fill: '#0f0 '});
+    this.add.existing(this.clickButton);
+    this.clickButton
+      .setInteractive({ useHandCursor: true })
+      .on('pointerover', () => this.enterButtonHoverState() )
+      .on('pointerout', () => this.enterButtonRestState() )
+      .on('pointerdown', () => this.enterButtonActiveState() )
+      .on('pointerup', () => {
+        this.updateClickCountText(++clickCount);
+        this.enterButtonHoverState();
+    });
+
+    this.updateClickCountText(clickCount);
+  }
+
+  updateClickCountText(clickCount) {
+    this.clickCountText.setText(`Button has been clicked ${clickCount} times.`);
+  }
+
+  enterButtonHoverState() {
+    this.clickButton.setStyle({ fill: '#ff0 '});
+  }
+
+  enterButtonRestState() {
+    this.clickButton.setStyle({ fill: '#0f0 '});
+  }
+
+  enterButtonActiveState() {
+    this.clickButton.setStyle({ fill: '#0ff' });
+  }
+}
+```
+
+We call the `Phaser.GameObjects.Text` constructor and pass in the Scene instance as the first parameter. Then we call the Scene's `this.add.existing` method and pass in our instantiated Text object. This is almost exactly what the `this.add.text` method does internally.
+
+Now, we can import our `TextButton` and use that instead.
+
+```javascript
+import { TextButton } from '../game-objects/text-button';
+
+export class SimpleScene extends Phaser.Scene {
+  create() {
+    let clickCount = 0;
+    this.clickCountText = this.add.text(100, 200, '');
+
+    this.clickButton = new TextButton(this, 100, 100, 'Click me!', { fill: '#0f0 '});
+    this.add.existing(this.clickButton);
+    this.clickButton
+      .setInteractive({ useHandCursor: true })
+      .on('pointerover', () => this.enterButtonHoverState() )
+      .on('pointerout', () => this.enterButtonRestState() )
+      .on('pointerdown', () => this.enterButtonActiveState() )
+      .on('pointerup', () => {
+        this.updateClickCountText(++clickCount);
+        this.enterButtonHoverState();
+    });
+
+    this.updateClickCountText(clickCount);
+  }
+
+  updateClickCountText(clickCount) {
+    this.clickCountText.setText(`Button has been clicked ${clickCount} times.`);
+  }
+
+  enterButtonHoverState() {
+    this.clickButton.setStyle({ fill: '#ff0 '});
+  }
+
+  enterButtonRestState() {
+    this.clickButton.setStyle({ fill: '#0f0 '});
+  }
+
+  enterButtonActiveState() {
+    this.clickButton.setStyle({ fill: '#0ff' });
+  }
+}
+```
+
+Now that we are using an instance of our `TextButton`, let's start baking in some of its functionality. We'll hardcode it to start, then allow the button to be configured through some parameters in its constructor.
+
+### Functionality for our `TextButton`
+
+We can start by having the button automatically set itself as interactive. We want to do this when the button is instantiated, so we'll have to override the constructor for the button.
+
+It's important that our overridden constructor calls the `Phaser.GameObjects.Text`'s constructor prior to our custom functionality. This way, the Text object gets created correctly in Phaser. So we take in the same parameters that we are currently passing to the Text object's constructor, and just forward them along in ours.
+
+```javascript
+export class TextButton extends Phaser.GameObjects.Text {
+  constructor(scene, x, y, text, style) {
+    super(scene, x, y, text, style);
+  }
+}
+```
+
+Now we can add the call to the `setInteractive` method in our `TextButton` and remove it from our Scene.
+
+```javascript
+export class TextButton extends Phaser.GameObjects.Text {
+  constructor(scene, x, y, text, style) {
+    super(scene, x, y, text, style);
+
+    this.setInteractive({ useHandCursor: true });
+  }
+}
+```
+
+```javascript
+import { TextButton } from '../game-objects/text-button';
+
+export class SimpleScene extends Phaser.Scene {
+  create() {
+    let clickCount = 0;
+    this.clickCountText = this.add.text(100, 200, '');
+
+    this.clickButton = new TextButton(this, 100, 100, 'Click me!', { fill: '#0f0 '});
+    this.add.existing(this.clickButton);
+    this.clickButton
+      .on('pointerover', () => this.enterButtonHoverState() )
+      .on('pointerout', () => this.enterButtonRestState() )
+      .on('pointerdown', () => this.enterButtonActiveState() )
+      .on('pointerup', () => {
+        this.updateClickCountText(++clickCount);
+        this.enterButtonHoverState();
+    });
+
+    this.updateClickCountText(clickCount);
+  }
+
+  updateClickCountText(clickCount) {
+    this.clickCountText.setText(`Button has been clicked ${clickCount} times.`);
+  }
+
+  enterButtonHoverState() {
+    this.clickButton.setStyle({ fill: '#ff0 '});
+  }
+
+  enterButtonRestState() {
+    this.clickButton.setStyle({ fill: '#0f0 '});
+  }
+
+  enterButtonActiveState() {
+    this.clickButton.setStyle({ fill: '#0ff' });
+  }
+}
+```
+
+And our `TextButton` still works! This is a good example of how refactoring generally goes. Build something out, then pull out the related parts into their own components.
+
+Let's pull in our active state next. This means taking our `pointerdown` event listener out of our Scene and putting it into the `TextButton`. We'll also pull the `enterButtonActiveState` method into our `TextButton` class as well.
+
+```javascript
+export class TextButton extends Phaser.GameObjects.Text {
+  constructor(scene, x, y, text, style) {
+    super(scene, x, y, text, style);
+
+    this.setInteractive({ useHandCursor: true })
+      .on('pointerdown', () => this.enterButtonActiveState() )
+  }
+
+  enterButtonActiveState() {
+    this.setStyle({ fill: '#0ff' });
+  }
+}
+```
+
+```javascript
+import { TextButton } from '../game-objects/text-button';
+
+export class SimpleScene extends Phaser.Scene {
+  create() {
+    let clickCount = 0;
+    this.clickCountText = this.add.text(100, 200, '');
+
+    this.clickButton = new TextButton(this, 100, 100, 'Click me!', { fill: '#0f0 '});
+    this.add.existing(this.clickButton);
+    this.clickButton
+      .on('pointerover', () => this.enterButtonHoverState() )
+      .on('pointerout', () => this.enterButtonRestState() )
+      .on('pointerup', () => {
+        this.updateClickCountText(++clickCount);
+        this.enterButtonHoverState();
+    });
+
+    this.updateClickCountText(clickCount);
+  }
+
+  updateClickCountText(clickCount) {
+    this.clickCountText.setText(`Button has been clicked ${clickCount} times.`);
+  }
+
+  enterButtonHoverState() {
+    this.clickButton.setStyle({ fill: '#ff0 '});
+  }
+
+  enterButtonRestState() {
+    this.clickButton.setStyle({ fill: '#0f0 '});
+  }
+}
+```
+
+> Don't forget to change the `enterButtonActiveState` method to call `this.setStyle` instead of `this.clickButton.setStyle`.
+
+Let's pull in the rest of the style changes for the button now. We'll leave the function call to update the `clickCountText` in our Scene.
+
+
+```javascript
+export class TextButton extends Phaser.GameObjects.Text {
+  constructor(scene, x, y, text, style) {
+    super(scene, x, y, text, style);
+
+    this.setInteractive({ useHandCursor: true })
+      .on('pointerover', () => this.enterButtonHoverState() )
+      .on('pointerout', () => this.enterButtonRestState() )
+      .on('pointerdown', () => this.enterButtonActiveState() )
+      .on('pointerup', () => this.enterButtonHoverState() );
+  }
+
+  enterButtonHoverState() {
+    this.setStyle({ fill: '#ff0 '});
+  }
+
+  enterButtonRestState() {
+    this.setStyle({ fill: '#0f0 '});
+  }
+
+  enterButtonActiveState() {
+    this.setStyle({ fill: '#0ff' });
+  }
+}
+```
+
+```javascript
+import { TextButton } from '../game-objects/text-button';
+
+export class SimpleScene extends Phaser.Scene {
+  create() {
+    let clickCount = 0;
+    this.clickCountText = this.add.text(100, 200, '');
+
+    this.clickButton = new TextButton(this, 100, 100, 'Click me!', { fill: '#0f0 '});
+    this.add.existing(this.clickButton);
+    this.clickButton.on('pointerup', () => {
+        this.updateClickCountText(++clickCount);
+    });
+
+    this.updateClickCountText(clickCount);
+  }
+
+  updateClickCountText(clickCount) {
+    this.clickCountText.setText(`Button has been clicked ${clickCount} times.`);
+  }
+}
+```
+
+Awesome! Our code in the Scene is looking much cleaner already - the code in the scene doesn't have anything to do with changing the styles in our `TextButton`. That's a responsibility the `TextButton` should have for itself.
+
+#### Passing in a Callback
+
+As developers we don't want to have to know how the `TextButton` works internally to use it. We shouldn't have to know that it considers a `pointerup` event to be the appropriate time to respond to the user's click. Having this knowledge abstracted away from our Scene and into the `TextButton` makes it a more reusable and simpler component. To fix this, we can pass in a callback function as a parameter to the `TextButton` constructor.
+
+This change also involves slightly reworking our `updateClickCountText` method so that it knows about the `clickCount` value.
+
+```javascript
+export class TextButton extends Phaser.GameObjects.Text {
+  constructor(scene, x, y, text, style, callback) {
+    super(scene, x, y, text, style);
+
+    this.setInteractive({ useHandCursor: true })
+      .on('pointerover', () => this.enterButtonHoverState() )
+      .on('pointerout', () => this.enterButtonRestState() )
+      .on('pointerdown', () => this.enterButtonActiveState() )
+      .on('pointerup', () => {
+        this.enterButtonHoverState();
+        callback();
+      });
+  }
+
+  enterButtonHoverState() {
+    this.setStyle({ fill: '#ff0 '});
+  }
+
+  enterButtonRestState() {
+    this.setStyle({ fill: '#0f0 '});
+  }
+
+  enterButtonActiveState() {
+    this.setStyle({ fill: '#0ff' });
+  }
+}
+```
+
+```javascript
+import { TextButton } from '../game-objects/text-button';
+
+export class SimpleScene extends Phaser.Scene {
+  create() {
+    this.clickCount = 0;
+    this.clickCountText = this.add.text(100, 200, '');
+
+    this.clickButton = new TextButton(this, 100, 100, 'Click me!', { fill: '#0f0 '}, () => this.updateClickCountText());
+    this.add.existing(this.clickButton);
+
+    this.updateClickCountText();
+  }
+
+  updateClickCountText() {
+    this.clickCountText.setText(`Button has been clicked ${this.clickCount} times.`);
+    this.clickCount++;
+  }
+}
+```
+
+Great! Everything that makes our `TextButton` a `TextButton` now lives inside the `TextButton` class. When we instantiate, we tell it what we want to happen when it is clicked, which is our Scene's concern, not our Button's.
+
+### Adding Another TextButton
+
+So let's put all this abstraction to good use. Let's add another button to our scene that will subtract one from our click count.
+
+```javascript
+import { TextButton } from '../game-objects/text-button';
+
+export class SimpleScene extends Phaser.Scene {
+  create() {
+    this.clickCount = 0;
+    this.clickCountText = this.add.text(100, 200, '');
+
+    this.incrementButton = new TextButton(this, 100, 100, 'Increment Count', { fill: '#0f0 '}, () => this.incrementClickCount());
+    this.add.existing(this.incrementButton);
+
+    this.decrementButton = new TextButton(this, 100, 150, 'Decrement Count', { fill: '#0f0 '}, () => this.decrementClickCount());
+    this.add.existing(this.decrementButton);
+
+    this.updateClickCountText();
+  }
+
+  incrementClickCount() {
+    this.clickCount += 1;
+    this.updateClickCountText();
+  }
+
+  decrementClickCount() {
+    this.clickCount -= 1;
+    this.updateClickCountText();
+  }
+
+  updateClickCountText() {
+    this.clickCountText.setText(`Button has been clicked ${this.clickCount} times.`);
+  }
+}
+```
+
+**We didn't have to touch our `TextButton` class at all!** Since our `TextButton` only concerns itself with being a button, and our Scene only concerns itself with the actual scene logic, we were able to reuse our custom game object really easily.
+
+### Wrapping It Up
+

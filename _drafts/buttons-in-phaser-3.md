@@ -596,7 +596,14 @@ export class SimpleScene extends Phaser.Scene {
 }
 ```
 
+![browser increment decrement](/blog/img/posts/buttons-in-phaser-3/browser-increment-decrement.gif)
+
 **We didn't have to touch our `TextButton` class at all!** Since our `TextButton` only concerns itself with being a button, and our Scene only concerns itself with the actual scene logic, we were able to reuse our custom game object really easily.
 
 ### Wrapping It Up
 
+You can find the full source of this example [up on github](https://www.github.com/snowbillr/buttons-in-phaser-3).
+
+Hopefully it was helpful to see that buttons really aren't anything special in Phaser: they are just GameObjects that respond to pointer events. This concept isn't special to Phaser either! Try doing the same thing with a `<div>` html element and listening for `mouseover`, `mouseout`, `mousedown`, `mouseup` events and changing something about the `<div>` for each of them.
+
+I hope that the exercise in refactoring was helpful too. This is a good pattern to follow for building out different components of your game. Build it and make it work in your scene, refactor it out so that its logic is encapsulated to its own file. Clean coders will tell you this is keeping a good Separation of Concerns in your project.

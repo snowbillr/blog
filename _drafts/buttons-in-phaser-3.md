@@ -20,7 +20,7 @@ Once you have the project running you should see something like this in your bro
 
 Lucky for us our project already has taken care of the first part of our most basic button. That ugly green text on that ugly black background? Looks like a perfect candidate for an ugly button!.
 
-The ugly green text is an instance of `Phaser.GameObjects.Text` which extends the `Phaser.GameObjects.GameObject` class. Everything that gets added to our scene is an instance of `GameObject`, and this is the class that provides us with the method we need to make our text (or our image, or sprite, or any other `GameObject`) clickable.
+Every object that gets added to our scene is an instance that extends from `Phaser.GameObjects.GameObject`. In this case, `Phaser.GameObjects.Text` extends the base `GameObject` class. Its this class that provides us with the method we need to make our text (or image, or sprite, or any other `GameObject`) clickable.
 
 We need tell Phaser that we want our player to be able to interact with our `GameObject`. [I wonder what method we should call on GameObject.](https://github.com/photonstorm/phaser/blob/v3.3.0/src/gameobjects/GameObject.js#L262)
 
@@ -209,7 +209,7 @@ export class SimpleScene extends Phaser.Scene {
 
 ## Keeping It Clean
 
-In the spirit of keeping our codebase well organized, we have some refactoring to do. If we want to add more than one of our ugly buttons to our game, we would need to dupliate this code each time. Instead of that, let's extract the code for the button into its own class.
+In the spirit of keeping our codebase well organized, we have some refactoring to do. If we want to add more than one of our ugly buttons to our game, we would need to duplicate this code each time. Instead of that, let's extract the code for the button into its own class.
 
 > Bonus Tip: Phaser has an excellent plugin system that allows you to add your own `GameObject` factories. However, I haven't taken the time to dive into it yet, plus its a little outside the scope of this tutorial. As an exercise on your own, try and build this out into a real plugin!
 
@@ -339,7 +339,7 @@ export class TextButton extends Phaser.GameObjects.Text {
 }
 ```
 
-Now we can add the call to the `setInteractive` method in our `TextButton` and remove it from our Scene.
+Now we can add take the call to the `setInteractive` method from our Scene and move it in to our `TextButton` constructor.
 
 ```javascript
 export class TextButton extends Phaser.GameObjects.Text {
@@ -445,7 +445,7 @@ export class SimpleScene extends Phaser.Scene {
 }
 ```
 
-> Don't forget to change the `enterButtonActiveState` method to call `this.setStyle` instead of `this.clickButton.setStyle`.
+Don't forget to change the `enterButtonActiveState` method to call `this.setStyle` instead of `this.clickButton.setStyle`.
 
 Let's pull in the rest of the style changes for the button now. We'll leave the function call to update the `clickCountText` in our Scene.
 

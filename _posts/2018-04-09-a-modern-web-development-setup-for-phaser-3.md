@@ -1,5 +1,3 @@
-# A Modern Web Development Setup for Phaser 3
-
 Lots of tutorials for Phaser assume all your game's code will be in one JavaScript file and that all your dependencies will be downloaded by hand. In a real world development environment this would not be a feasible setup.
 
 In a modern development environment, you'll be using something like Yarn to manage your dependencies and Webpack to bundle your code. In some cases you might be using a tool to transpile your code.

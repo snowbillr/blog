@@ -125,7 +125,17 @@ export class SimpleScene extends Phaser.Scene {
 
 ![browser simple hover](/blog/img/posts/buttons-in-phaser-3/browser-simple-hover.gif)
 
-Similarly, our Slightly More Complicated Button™ should have an active state too. We can tell when our button becomes active by listening to the `pointerdown` event. We'll also change our existing listener that updates the counter to run on the `pointerup` event so we can make our button feel like it's correctly transitioning through its states.
+Similarly, our Slightly More Complicated Button™ should have an active state too. Which gives our button three different states in total: rest, hover, and active. Let's explicitly call out how we will transition between all our states:
+
+```
+          pointerover             pointerdown
++------+  ---------->  +-------+  ---------->  +--------+
+| rest |               | hover |               | active |
++------+  <----------  +-------+  <----------  +--------+
+          pointerout              pointerup
+```
+
+We can tell when our button becomes active by listening to the `pointerdown` event. We'll also change our existing listener that updates the counter to run on the `pointerup` event so we can make our button feel like it's correctly transitioning through its states.
 
 ```javascript
 export class SimpleScene extends Phaser.Scene {

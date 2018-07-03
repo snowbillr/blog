@@ -612,7 +612,7 @@ export class SimpleScene extends Phaser.Scene {
 
 ### Wrapping It Up
 
-You can find the full source of this example [up on github](https://www.github.com/snowbillr/buttons-in-phaser-3).
+You can find the full source of this example [up on github](https://www.github.com/snowbillr/buttons-in-phaser3).
 
 Hopefully it was helpful to see that buttons really aren't anything special in Phaser: they are just `GameObjects` that respond to pointer events. That means that rather than a Text object, you could also make a button out of a Sprite, or an Image, or any other game object!
 

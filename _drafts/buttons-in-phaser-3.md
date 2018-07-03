@@ -1,14 +1,14 @@
-Phaser 2 had buttons but they aren't built in to Phaser 3. Thankfully, they are simple to make on our own. In this tutorial we'll break down what it means to be a button and how to make one in Phaser-land.
+Phaser 2 had buttons but they aren't built in to Phaser 3. In reality, they are simple to make on our own. In this tutorial we'll break down what it means for something to be a button and how to make one in Phaser-land.
 
 ## Buttons Aren't Scary
 
-Buttons aren't some magic black box of mystery. In its simplest form a button is something that responds to clicks.
+Buttons aren't some magic black box of mystery. A button in its simplest form is something that responds to clicks.
 
 That's it.
 
 Hover states, animations, fancy effects, whatever, are just icing on the cake. Phaser makes it really easy to make something clickable, so let's start with building that.
 
-## Project Set Up
+## Project Setup
 
 I'll be using the project setup from [this blog post](https://snowbillr.github.io/blog/2018-04-09-a-modern-web-development-setup-for-phaser-3/). You can follow through that post to set up the project yourself, or you can clone the full setup [from GitHub](https://github.com/snowbillr/phaser3-webpack-es6-dev-starter) and follow the instructions in its README.
 
@@ -22,9 +22,11 @@ Lucky for us our project already has taken care of the first part of our most ba
 
 Every object that gets added to our scene is an instance that extends from `Phaser.GameObjects.GameObject`. In this case, `Phaser.GameObjects.Text` extends the base `GameObject` class. It's this class that provides us with the method we need to make our text (or image, or sprite, or any other `GameObject`) clickable.
 
-We need tell Phaser that we want our player to be able to interact with our `GameObject`. [I wonder what method we should call on GameObject.](https://github.com/photonstorm/phaser/blob/v3.3.0/src/gameobjects/GameObject.js#L262)
+We need tell Phaser that we want our player to be able to interact with our `GameObject`. [I wonder what method we should call on GameObject.](https://github.com/photonstorm/phaser/blob/v3.10.1/src/gameobjects/GameObject.js#L352)
 
-Great guess! It *is* the `setInteractive` method. Don't worry about any of the arguments to the method for now. If we call that method on our text object with no parameters, it will make the rectangular bounds of our text interactive, which is exactly what we want. So let's do that in `scenes/simple-scene.js`. We'll also keep a reference to our text object in a variable so we have access to it later. Since we don't need the coke can sprite, we can remove that as well.
+Great guess! It *is* the `setInteractive` method. Don't worry about any of the arguments to the method for now. If we call that method on our text object with no parameters, it will make the rectangular bounds of our text interactive, which is exactly what we want.
+
+So let's do that in `scenes/simple-scene.js`. We'll also keep a reference to our text object in a variable so we have access to it later. Since we don't need the coke can sprite, we can remove that as well.
 
 ```javascript
 export class SimpleScene extends Phaser.Scene {
@@ -511,7 +513,7 @@ export class SimpleScene extends Phaser.Scene {
 
 Awesome! Our code in the Scene is looking much cleaner already - the code in the scene doesn't have anything to do with changing the styles in our `TextButton`. That's a responsibility the `TextButton` should have for itself.
 
-#### Passing in a Callback
+### Passing in a Callback
 
 As developers we don't want to have to know how the `TextButton` works internally to use it. We shouldn't have to know that it considers a `pointerup` event to be the appropriate time to respond to the user's click. Having this knowledge abstracted away from our Scene and into the `TextButton` makes it a more reusable and simpler component. To fix this, we can pass in a callback function as a parameter to the `TextButton` constructor.
 
@@ -612,7 +614,7 @@ export class SimpleScene extends Phaser.Scene {
 
 ### Wrapping It Up
 
-You can find the full source of this example [up on github](https://www.github.com/snowbillr/buttons-in-phaser3).
+You can find the full source of this example [up on github](https://www.github.com/snowbillr/buttons-in-phaser3). Phaser also has a great set of examples for interacting with the input systems. Take a look at these three examples for the same pointer events we used for our button: [pointerup](https://labs.phaser.io/view.html?src=src/input/game%20object/on%20up%20event.js), [pointerdown](https://labs.phaser.io/view.html?src=src/input/game%20object/on%20down%20event.js), [pointerover and pointerout](https://labs.phaser.io/view.html?src=src/input/game%20object/over%20and%20out%20events.js).
 
 Hopefully it was helpful to see that buttons really aren't anything special in Phaser: they are just `GameObjects` that respond to pointer events. That means that rather than a Text object, you could also make a button out of a Sprite, or an Image, or any other game object!
 

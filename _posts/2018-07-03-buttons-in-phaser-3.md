@@ -622,6 +622,7 @@ I hope that the exercise in refactoring was helpful too. This is a good pattern 
 
 ### Bonus Exercises:
 
+* Remember how I mentioned that Phaser 3 has a great plugin system? Here's an example of how to register a custom game object with Phaser: https://labs.phaser.io/view.html?src=src/plugins/custom%20game%20object.js. Transform our `TextButton` into an plugin.
 * The concept of a button isn't special to Phaser! Try doing the same thing with a `<div>` html element and listening for `mouseover`, `mouseout`, `mousedown`, `mouseup` events and changing something about the `<div>` for each of them.
 * What if you want your `TextButton` to have different colors for each of its states? Enhance the `TextButton` to allow the user to change the styles for each state. Hint: pass in more parameters via the constructor, or add some setter methods!
 * Add a new "clicked" state to the button (much like the `visited` state of a link on a website).
